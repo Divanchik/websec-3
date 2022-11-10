@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css?family=Ubuntu');
+
+html {
+    height: 100%;
+    font-family: Ubuntu, sans-serif;
+    background: rgb(59,31,220);
+    background: linear-gradient(135deg, rgba(59,31,220,1) 0%, rgba(31,192,220,1) 100%);
+}
+
+.logreg {
+    background-color: azure;
+    display: flex;
+    flex-direction: column;
+    margin: auto auto;
+    min-width: 400px;
+    min-height: 300px;
+    max-width: fit-content;
+    padding: 1rem;
+    justify-content: center;
+    row-gap: 10px;
+    border-radius: 5px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+a {
+    display: flex;
+    color: azure;
+    justify-content: center;
+    text-decoration: none;
+    padding: 1rem;
+    background: #1f91dc;
+    border-radius: 10px;
+}
+
+a:hover {
+    background: #1f61dc;
+}
+
+.pagetitle {
+    display: flex;
+    margin: 2rem auto;
+    color: azure;
+    max-width: fit-content;
+    justify-content: center;
+}
