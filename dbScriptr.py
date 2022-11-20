@@ -1,5 +1,6 @@
 import sqlite3
 
+
 db = sqlite3.connect('twitter.db')
 
 cursor = db.cursor()
