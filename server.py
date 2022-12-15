@@ -45,7 +45,6 @@ def register():
 
 @app.post("/register")
 def register_data():
-<<<<<<< HEAD
     # check email and username uniqueness
     # if alright, generate link and send mail
     # set success flag
@@ -53,11 +52,9 @@ def register_data():
     data = request.get_json()
     for k, v in data.items():
         print(f"\t{k}: {v}")
-=======
     app.logger.debug("register [POST]")
     print(request.get_json())
     mail.send_email(request.get_json()['username'], request.get_json()['email'], request.get_json()['password'])
->>>>>>> 3e93370146027709b13cf8e97529edee93b7165f
     return dumps({'success': False})
 
 @app.get("/confirm")
