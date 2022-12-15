@@ -47,20 +47,33 @@ class MyForm extends React.Component
   render()
   {
     return (
-      <form onSubmit={(e) => this.handleSubmit(e)}>
-        <input className="reg_input_text"
+      <form onSubmit={(e) => this.handleSubmit(e)} className="container p-1">
+        <div className="mb-3">
+          <input className="form-control"
           type="text"
+          pattern="^[a-zA-Z\d_]{3,25}$"
+          required="required"
           placeholder="Username"
           onChange={(e) => this.setState({username: e.target.value})} />
-        <input className="reg_input_text"
-          type="text"
+        </div>
+        <div className="mb-3">
+          <input className="form-control"
+          type="email"
+          required="required"
           placeholder="Email"
           onChange={(e) => this.setState({email: e.target.value})} />
-        <input className="reg_input_text"
+        </div>
+        <div className="mb-3">
+          <input className="form-control"
           type="password"
+          pattern="^\S{8,30}$"
+          required="required"
           placeholder="Password"
           onChange={(e) => this.setState({password: e.target.value})} />
-        <input className="reg_input_submit" type="submit" value="Register"/>
+        </div>
+        <div className="mb-3 mx-auto">
+          <input className="btn btn-primary" type="submit" value="Register" style={{width: 120 + 'px'}}/>
+        </div>
       </form>
     )
   }

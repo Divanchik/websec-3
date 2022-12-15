@@ -18,8 +18,10 @@ def register():
 
 @app.post("/register")
 def register_data():
-    app.logger.debug("register [POST]")
-    print(request.get_json())
+    app.logger.debug("Got register data!")
+    data = request.get_json()
+    for k, v in data.items():
+        print(f"\t{k}: {v}")
     return dumps({'success': False})
 
 if __name__ == "__main__":

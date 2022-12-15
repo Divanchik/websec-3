@@ -1,0 +1,8 @@
+@import url('https://fonts.googleapis.com/css?family=Ubuntu');
+
+html {
+    height: 100%;
+    font-family: Ubuntu, sans-serif;
+    background: rgb(59,31,220);
+    background: linear-gradient(135deg, rgba(59,31,220,1) 0%, rgba(31,192,220,1) 100%);
+}
