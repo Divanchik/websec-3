@@ -12,6 +12,14 @@ def main():
 def login():
     return render_template("login.html")
 
+@app.post("/login")
+def login_data():
+    app.logger.debug("Got login data!")
+    data = request.get_json()
+    for k, v in data.items():
+        print(f"\t{k}: {v}")
+    return dumps({'success': True, 'username': 'dimadivan'})
+
 @app.get("/register")
 def register():
     return render_template("register.html")
