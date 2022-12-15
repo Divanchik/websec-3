@@ -14,6 +14,10 @@ def login():
 
 @app.post("/login")
 def login_data():
+    # check, if login is email or username
+    # search for user
+    # check password
+    # set flag and username (for link)
     app.logger.debug("Got login data!")
     data = request.get_json()
     for k, v in data.items():
@@ -26,11 +30,21 @@ def register():
 
 @app.post("/register")
 def register_data():
+    # check email and username uniqueness
+    # if alright, generate link and send mail
+    # set success flag
     app.logger.debug("Got register data!")
     data = request.get_json()
     for k, v in data.items():
         print(f"\t{k}: {v}")
     return dumps({'success': False})
+
+@app.get("/confirm")
+def confirmation():
+    # check data from link
+    # add user to db (or not)
+    # make confirmation message (successful or not, etc)
+    return render_template("confirm.html", conf_msg="Registration confirmed!")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
