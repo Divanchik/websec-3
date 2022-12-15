@@ -5,19 +5,6 @@ from email.mime.text import MIMEText
 import json
 
 salt = "e&xKRt*kb&tUlrQ6"
-"""def get_link1(username:str, email:str, password:str, salt: str):
-    password_hash = hashlib.sha256(password.encode() + salt.encode())
-    data = username.encode() + email.encode() + password_hash.hexdigest().encode()
-    data_hash = hashlib.sha256(data + salt.encode())
-    return f"http://localhost:5000/?username={username}&email={email}&hash_passwd={password_hash.hexdigest()}&data={data_hash.hexdigest()}"
-
-def confirm_link(username:str, email:str, phash:str, dhash: str, salt: str):
-    data = username.encode() + email.encode() + phash.encode()
-    data_hash = hashlib.sha256(data + salt.encode())
-    if data_hash.hexdigest() == dhash:
-        return True
-    return False"""
-
 
 
 def get_link(username:str, email:str, password:str, salt:str):
@@ -80,6 +67,12 @@ def send_email(username:str, email:str, password:str):
 
 
 
+def check_passwd(passwd:str, hashpasswd):
+     
+    check_hash_passwd = hashlib.sha256(passwd.encode("utf-8") + salt.encode("utf-8"))
 
+    if check_hash_passwd.hexdigest() == hashpasswd:
+        return True
+    return False
 #print(get_link("shafa_01", "shafranyukroman@yandex.ru","12345678"))
 #print(send_email("shafa_01", "jimmycerry999@gmail.com","12345678"))
