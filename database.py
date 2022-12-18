@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, DateTime
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.sql.functions import count
 engine = create_engine('sqlite:///test.db')
 
 db_session = scoped_session(sessionmaker(autocommit=False,
@@ -25,10 +26,22 @@ def add_post(author_name, content):
     author_id = author[0][0]
     new_post = Post(content, author_id)
     db_session.add(new_post)
-    post_id = db_session.query(Post.postID).select_from(Post).where(Post.content == content).all()
-    post_id = post_id[0][0]
     db_session.commit()
-    return post_id
+    post_id = db_session.query(Post.postID).select_from(Post).where(Post.content == content).all()
+    db_session.commit()
+    return post_id[0][0]
+
+
+
+def count_of_images():
+    c = db_session.query(count(Image.imageID)).select_from(Image).all()
+    return str(c[0][0])
+
+def add_image(URL, post_id):
+    new_image = Image(URL, 0, post_id,0)
+    db_session.add(new_image)
+    db_session.commit()
+
 
 def find_user_by_name(user):
     user = db_session.query(User.username, User.email, User.password).select_from(
@@ -117,7 +130,7 @@ class Image(Base):
         self.imageURL = URL
         self.order = ord
         self.p_id = post_id
-        self.user = user
+        self.u_id = user
 
 
 class Subscription(Base):
@@ -173,4 +186,4 @@ class Like(Base):
 #u = User('Goshan', 'admin@ocalhost.ru', "34ggq32q")
 #db_session.add(u)
 # db_session.commit()
-
+count_of_images()

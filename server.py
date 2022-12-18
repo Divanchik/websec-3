@@ -5,7 +5,7 @@ import database
 import hashlib
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-app.config["UPLOAD_FOLDER"] = "/images"
+app.config["UPLOAD_FOLDER"] = "./images"
 salt = "e&xKRt*kb&tUlrQ6"
 @app.route("/")
 def main():
@@ -42,9 +42,12 @@ def login_data():
     if mail.check_passwd(passwd,user[2]) == False:
         return dumps({'success': False})
     session["username"] = user[0]
-    session["id"] = hashlib.sha256(user[0].encode("utf-8") + salt.encode("utf-8"))
+    session["id"] = hashlib.sha256(user[0].encode("utf-8") + salt.encode("utf-8")).hexdigest()
     return dumps({'success': True, 'username':user[0]})
 
+@app.get("/user/<username>")
+def user(username):
+    return "<h1>Profile page</h1>"
 @app.get("/logout")
 def logout():
     session.pop('username', None)
@@ -54,7 +57,7 @@ def logout():
 @app.get("/register")
 def register():
     return render_template("register.html")
-
+ 
 @app.post("/register")
 def register_data():
     app.logger.debug("register [POST]")
@@ -64,6 +67,28 @@ def register_data():
     mail.send_email(request.get_json()['username'], request.get_json()['email'], request.get_json()['password'])
     return dumps({'success': True})
 
+@app.get("/user/<username>/new")
+def post(username):
+    return render_template("newpost.html")
+
+
+@app.post("/user/<username>/new")
+def new_post(username):
+    print(request.form['post_content'])
+    post_id = database.add_post(username,request.form['post_content'])
+    image = request.files.get('pub_img')
+    if image is not None:
+        format = image.filename.endswith(".png")
+        name = hashlib.sha256(database.count_of_images().encode()).hexdigest()
+        if format:
+            filename = f'{app.config["UPLOAD_FOLDER"]}/{name}.png'
+            image.save(filename)
+            database.add_image(filename, post_id)
+        else:
+            filename = f'{app.config["UPLOAD_FOLDER"]}/{name}.jpeg'
+            image.save(filename)
+            database.add_image(filename, post_id)
+    return redirect(url_for('user', username=username))
 if __name__ == "__main__":
     database.init_db()
     app.run(host="0.0.0.0", port=5000, debug=True)
