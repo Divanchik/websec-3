@@ -11,7 +11,6 @@ db_session = scoped_session(sessionmaker(autocommit=False,
 Base = declarative_base()
 Base.query = db_session.query_property()
 
-
 def init_db():
     Base.metadata.create_all(bind=engine)
 
@@ -21,6 +20,15 @@ def add_user(username, email, hashpasswd):
     db_session.add(u)
     db_session.commit()
 
+def add_post(author_name, content):
+    author = db_session.query(User.userID).select_from(User).where(User.username == author_name).all()
+    author_id = author[0][0]
+    new_post = Post(content, author_id)
+    db_session.add(new_post)
+    post_id = db_session.query(Post.postID).select_from(Post).where(Post.content == content).all()
+    post_id = post_id[0][0]
+    db_session.commit()
+    return post_id
 
 def find_user_by_name(user):
     user = db_session.query(User.username, User.email, User.password).select_from(
@@ -31,6 +39,7 @@ def find_user_by_name(user):
         result.append(i[1])
         result.append(i[2])
     print(result)
+    db_session.commit()
     return result
 
 
@@ -44,20 +53,25 @@ def find_user_by_email(email):
         result.append(i[1])
         result.append(i[2])
     print(result)
+    db_session.commit()
     return result
 
 def is_username_exist(username):
     check = db_session.query(User.username, User.email, User.password).select_from(
         User).where(User.username == username).all()
     if len(check) == 0:
+        db_session.commit()
         return False
+    db_session.commit()
     return True
 
 def is_email_exist(email):
     check = db_session.query(User.username, User.email, User.password).select_from(
         User).where(User.email == email).all()
     if len(check) == 0:
+        db_session.commit()
         return False
+    db_session.commit()
     return True
 
 
@@ -78,15 +92,15 @@ class Post(Base):
     __tablename__ = "posts"
     postID = Column(Integer, primary_key=True)
     content = Column(String(100), nullable=True)
-    data = Column(DateTime, default=datetime.datetime.utcnow)
+    data = Column(DateTime, default=datetime.datetime.now())
     likes_count = Column(Integer)
     u_id = Column(Integer, ForeignKey('users.userID'))
     user = relationship('User')
 
-    def __init__(self, content, user, likes_count=0):
+    def __init__(self, content, author_id, likes_count=0):
         self.content = content
         self.likes_count = likes_count
-        self.user = user
+        self.u_id = author_id
 
 
 class Image(Base):
@@ -99,10 +113,10 @@ class Image(Base):
     u_id = Column(Integer, ForeignKey('users.userID'))
     user = relationship('User')
 
-    def __init__(self, URL, ord, post, user):
+    def __init__(self, URL, ord, post_id, user):
         self.imageURL = URL
         self.order = ord
-        self.post = post
+        self.p_id = post_id
         self.user = user
 
 
@@ -114,9 +128,9 @@ class Subscription(Base):
     #subscriber = relationship('User')
     subscription = relationship('User')
 
-    def __init__(self,  subscription) -> None:
+    def __init__(self,  subscription_id) -> None:
         #self.subscriber = subscriber
-        self.subscription = subscription
+        self.subscription_id = subscription_id
 
 
 class Subscriber(Base):
@@ -124,24 +138,24 @@ class Subscriber(Base):
     sub_id = Column(Integer, primary_key=True)
     subscriber_id = Column(Integer, ForeignKey('users.userID'))
 
-    def __init__(self,  subscriber) -> None:
-        self.subscriber = subscriber
+    def __init__(self,  subscriber_id) -> None:
+        self.sub_id = subscriber_id
 
 
 class Comment(Base):
     __tablename__ = "comments"
     commentID = Column(Integer, primary_key=True)
     content = Column(String(100), nullable=True)
-    dataComment = Column(DateTime, default=datetime.datetime.utcnow)
+    dataComment = Column(DateTime, default=datetime.datetime.now())
     p_id = Column(Integer, ForeignKey('posts.postID'))
     post = relationship('Post')
     author_id = Column(Integer, ForeignKey('users.userID'))
     user = relationship('User')
 
-    def __init__(self, content, user, post):
+    def __init__(self, content, user_id, post_id):
         self.content = content
-        self.user = user
-        self.post = post
+        self.author_id = user_id
+        self.p_id = post_id
 
 
 class Like(Base):
@@ -151,11 +165,12 @@ class Like(Base):
     u_id = Column(Integer, ForeignKey('users.userID'), primary_key=True)
     user = relationship('User')
 
-    def __init__(self, user, post):
-        self.user = user
-        self.post = post
+    def __init__(self, user_id, post_id):
+        self.u_id = user_id
+        self.p_id = post_id
 
-# init_db()
+#init_db()
 #u = User('Goshan', 'admin@ocalhost.ru', "34ggq32q")
-# db_session.add(u)
+#db_session.add(u)
 # db_session.commit()
+

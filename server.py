@@ -2,8 +2,10 @@ from flask import Flask, render_template, redirect, session, request, url_for
 from json import dumps
 import mail
 import database
+import hashlib
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+app.config["UPLOAD_FOLDER"] = "/images"
 salt = "e&xKRt*kb&tUlrQ6"
 @app.route("/")
 def main():
@@ -40,7 +42,14 @@ def login_data():
     if mail.check_passwd(passwd,user[2]) == False:
         return dumps({'success': False})
     session["username"] = user[0]
+    session["id"] = hashlib.sha256(user[0].encode("utf-8") + salt.encode("utf-8"))
     return dumps({'success': True, 'username':user[0]})
+
+@app.get("/logout")
+def logout():
+    session.pop('username', None)
+    session.pop('id', None)
+    return render_template("login.html")
 
 @app.get("/register")
 def register():
