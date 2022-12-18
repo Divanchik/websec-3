@@ -22,3 +22,24 @@
 /posts/subs
 
 /confirm
+
+user profile
+	username
+	subs count
+	posts
+		username
+		datetime
+		text
+		images
+		likes
+		comments
+
+subs
+	username
+	posts
+		username
+		datetime
+		text
+		images
+		likes
+		comments
