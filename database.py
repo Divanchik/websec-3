@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import create_engine, DateTime
+from sqlalchemy import create_engine, DateTime, delete
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, ForeignKey
@@ -31,6 +31,15 @@ def add_post(author_name, content, im_id):
     db_session.add(new_post)
     db_session.commit()
 
+def add_like(u_id, p_id):
+    new_like = Like(u_id, p_id)
+    db_session.add(new_like)
+    db_session.commit()
+
+def delete_like(u_id, p_id):
+    deleted = delete(Like).where(Like.u_id == u_id and Like.p_id == p_id)
+    db_session.execute(deleted)
+    db_session.commit()
 
 def count_of_images():
     c = db_session.query(count(Image.imageID)).select_from(Image).all()
@@ -131,7 +140,7 @@ def get_posts_by_user(username):
 
     for i in range(len(posts_id)):
         flag = db_session.query(count(Like.u_id)).select_from(Like).join(User).where(Like.p_id == posts_id[i] and Like.u_id == authors[i]).all()
-        if flag == 1:
+        if flag[0][0] == 1:
             result[i]["isliked"] = True
         else:
             result[i]["isliked"] = False
@@ -239,4 +248,3 @@ class Like(Base):
 # db_session.commit()
 #get_posts_by_user('Roman')
 
-print(get_image_name(1))

@@ -59,8 +59,16 @@ def get_image(image_number):
     return image
 @app.post("/user/<username>")
 def get_post(username):
-    res = database.get_posts_by_user(username)
-    return dumps(res)
+    if request.get_json()['action'] == 'getposts':
+        res = database.get_posts_by_user(username)
+        return dumps(res)
+    elif request.get_json()['action'] == 'like':
+        if request.get_json()['isliked']:
+            database.add_like(session["username"], request.get_json()['postnum'])
+        else:
+            database.delete_like(session["username"], request.get_json()['postnum'])
+        return dumps({'success': True})
+    
 
 @app.get("/logout")
 def logout():
