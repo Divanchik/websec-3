@@ -238,5 +238,3 @@ class Like(Base):
 # db_session.add(u)
 # db_session.commit()
 #get_posts_by_user('Roman')
-
-print(get_image_name(1))
