@@ -47,7 +47,21 @@ def login_data():
 
 @app.get("/user/<username>")
 def user(username):
-    return "<h1>Profile page</h1>"
+    isauthor = True if session["username"] == username else False
+    return render_template("userprofile.html", pagetitle=f"{username}'s profile", username=username, author=isauthor)
+
+
+@app.get("/image/<image_number>")
+def get_image(image_number):
+    image_path = database.get_image_name(image_number)
+    with open(image_path, "rb") as f:
+        image = f.read()
+    return image
+@app.post("/user/<username>")
+def get_post(username):
+    res = database.get_posts_by_user(username)
+    return dumps(res)
+
 @app.get("/logout")
 def logout():
     session.pop('username', None)
@@ -74,20 +88,24 @@ def post(username):
 
 @app.post("/user/<username>/new")
 def new_post(username):
-    print(request.form['post_content'])
-    post_id = database.add_post(username,request.form['post_content'])
+    image_id = 0
     image = request.files.get('pub_img')
-    if image is not None:
+    print(request.form['post_content'])
+    if image.filename != "":
         format = image.filename.endswith(".png")
         name = hashlib.sha256(database.count_of_images().encode()).hexdigest()
         if format:
             filename = f'{app.config["UPLOAD_FOLDER"]}/{name}.png'
             image.save(filename)
-            database.add_image(filename, post_id)
+            image_id = database.add_image(filename)
         else:
             filename = f'{app.config["UPLOAD_FOLDER"]}/{name}.jpeg'
             image.save(filename)
-            database.add_image(filename, post_id)
+            image_id = database.add_image(filename)
+    
+    database.add_post(username,request.form['post_content'], image_id)
+    
+    
     return redirect(url_for('user', username=username))
 if __name__ == "__main__":
     database.init_db()
