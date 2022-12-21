@@ -9,9 +9,11 @@ let heart = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" view
 
 async function handleLike(event)
 {
+    let btn = event.currentTarget;
     try
     {
-        let pname = event.currentTarget.parentElement.parentElement.getAttribute('name');
+        console.debug(btn.classList);
+        let pname = btn.parentElement.parentElement.getAttribute('name');
         let pnum = parseInt(pname.slice(pname.lastIndexOf('_')+1));
         console.debug(`Clicked like on post #${pnum}`);
         url = window.location.href.slice();
@@ -24,11 +26,12 @@ async function handleLike(event)
             }
         );
         const data = await response.json();
+        console.debug(data);
         if (data['success'])
         {
-            event.currentTarget.classList.toggle('liked');
-            event.currentTarget.classList.toggle('notliked');
-            event.currentTarget.innerHTML = heart + data['likes'].toString();
+            btn.classList.toggle('liked');
+            btn.classList.toggle('notliked');
+            btn.innerHTML = heart + data['likes'].toString();
         }
         else
             console.error("Server error on 'like' fetch!");
