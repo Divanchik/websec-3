@@ -71,7 +71,12 @@ def get_post(username):
             database.delete_like(session["username"], request.get_json()['postnum'])
             likes_count -= 1
         return dumps({'success': True, 'likes': likes_count})
-    
+    elif request.get_json()['action'] == 'newcomment':
+        database.add_comment(session['username'], request.get_json()['postnum'], request.get_json()['content'])
+        return dumps({'success': True})
+    elif request.get_json()['action'] == 'getcomments':
+        inf = database.get_comment(request.get_json()['postnum'])
+        return dumps(inf) 
 
 @app.get("/logout")
 def logout():

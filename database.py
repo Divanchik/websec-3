@@ -46,6 +46,13 @@ def add_image(URL):
     db_session.commit()
     return image_id[0][0]
 
+def add_comment(username, post_id, content):
+    u_id = db_session.query(User.userID).select_from(User).where(User.username == username).all()
+    new_comment = Comment(content, u_id[0][0], post_id)
+    db_session.add(new_comment)
+    db_session.commit() 
+
+
 
 def delete_like(username, p_id):
     u_id = db_session.query(User.userID).select_from(User).where(User.username == username).all()
@@ -73,6 +80,22 @@ def is_liked(username, p_id):
 def get_image_name(image_id):
     name = db_session.query(Image.imageURL).select_from(Image).where(Image.imageID == image_id).all()
     return name[0][0]
+
+def get_comment(p_id):
+    res = []
+    comments_inf = db_session.query(User.username, Comment.content, Comment.dataComment).select_from(Comment).join(User).where(Comment.p_id == p_id).all()
+    db_session.commit()
+    for i in comments_inf:
+        tmp = {}
+        tmp["author"] = i[0]
+        tmp["content"] = i[1]
+        tmp["date"] = i[2].strftime(r"%Y-%m-%d %H:%M")
+        res.append(tmp)
+    res = sorted(
+    res,
+    key=lambda x: datetime.datetime.strptime(x['date'], r'%Y-%m-%d %H:%M'), reverse=True)
+    #print(res)
+    return res
 
 def get_posts_by_user(username):
     result = []
@@ -259,3 +282,6 @@ class Like(Base):
 #add_like("Roman",2)
 #add_like("Roman",3)
 #delete_like("Roman",3)
+#add_comment("Roman",3, 'Владимир Путин, молодец!')
+#add_comment("Roman",3, 'Политик, лидер и борец!')
+get_comment(3)
