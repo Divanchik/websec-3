@@ -31,10 +31,21 @@ def add_post(author_name, content, im_id):
     db_session.add(new_post)
     db_session.commit()
 
-def add_like(u_id, p_id):
-    new_like = Like(u_id, p_id)
+def add_like(username, p_id):
+    u_id = db_session.query(User.userID).select_from(User).where(User.username == username).all()
+    new_like = Like(u_id[0][0], p_id)
     db_session.add(new_like)
     db_session.commit()
+
+def add_image(URL):
+    new_image = Image(URL)
+    db_session.add(new_image)
+    db_session.commit()
+    image_id = db_session.query(Image.imageID).select_from(
+        Image).where(Image.imageURL == URL).all()
+    db_session.commit()
+    return image_id[0][0]
+
 
 def delete_like(u_id, p_id):
     deleted = delete(Like).where(Like.u_id == u_id and Like.p_id == p_id)
@@ -46,17 +57,66 @@ def count_of_images():
     db_session.commit()
     return str(c[0][0])
 
+def count_of_likes(p_id):
+    likes_count = db_session.query(count(Like.u_id)).select_from(Like).where(Like.p_id == p_id).all()
+    db_session.commit()
+    return likes_count[0][0]
+
+def is_liked(username, p_id):
+    u_id = db_session.query(User.userID).select_from(User).where(User.username == username).all()
+    flag = db_session.query(count(Like.u_id)).select_from(Like).join(User).where(Like.p_id == p_id and Like.u_id == u_id[0][0]).all()
+    if flag[0][0] == 1:
+        return True
+    return False
+
 def get_image_name(image_id):
     name = db_session.query(Image.imageURL).select_from(Image).where(Image.imageID == image_id).all()
     return name[0][0]
-def add_image(URL):
-    new_image = Image(URL)
-    db_session.add(new_image)
+
+def get_posts_by_user(username):
+    result = []
+
+    posts = db_session.query(User.username, Post.postID, Post.data, Post.content).select_from(
+        User).join(Post).where(User.username == username).all()
     db_session.commit()
-    image_id = db_session.query(Image.imageID).select_from(
-        Image).where(Image.imageURL == URL).all()
-    db_session.commit()
-    return image_id[0][0]
+    
+    posts_id = []
+    authors = []
+   
+
+    for i in posts:
+        authors.append(i[0])
+        posts_id.append(i[1])
+        tmp = {}
+        tmp["author"] = i[0]
+        tmp["post_id"] = i[1]
+        tmp["datetime"] = i[2].strftime(r"%Y-%m-%d %H:%M")
+        tmp["content"] = i[3]
+        result.append(tmp)
+    print(posts_id)
+    
+    for i in range(len(posts_id)):
+        im_id = db_session.query(Image.imageID).select_from(Post).join(Image).where(Post.postID == posts_id[i]).all()
+        db_session.commit()
+        result[i]["image_id"] = im_id[0][0]
+
+    for i in range(len(posts_id)):
+        likes_count = db_session.query(count(Like.u_id)).select_from(Like).where(Like.p_id == posts_id[i]).all()
+        db_session.commit()
+        result[i]["likes"] = likes_count[0][0]
+
+    for i in range(len(posts_id)):
+        print(f"author: {authors[i]}\n post_id = {posts_id[i]}")
+        u_id = db_session.query(User.userID).select_from(User).where(User.username == username).all()
+        flag = db_session.query(count(Like.u_id)).select_from(Like).join(User).where(Like.p_id == posts_id[i] and Like.u_id == u_id[0][0]).all()
+        if flag[0][0] == 1:
+            result[i]["isliked"] = True
+        else:
+            result[i]["isliked"] = False
+    
+    print(result)
+
+    return result
 
 
 def find_user_by_name(user):
@@ -104,51 +164,6 @@ def is_email_exist(email):
         return False
     db_session.commit()
     return True
-
-
-def get_posts_by_user(username):
-    result = []
-
-    posts = db_session.query(User.username, Post.postID, Post.data, Post.content).select_from(
-        User).join(Post).where(User.username == username).all()
-    db_session.commit()
-    
-    posts_id = []
-    authors = []
-   
-
-    for i in posts:
-        authors.append(i[0])
-        posts_id.append(i[1])
-        tmp = {}
-        tmp["author"] = i[0]
-        tmp["post_id"] = i[1]
-        tmp["datetime"] = i[2].strftime(r"%Y-%m-%d %H:%M")
-        tmp["content"] = i[3]
-        result.append(tmp)
-    print(posts_id)
-    
-    for i in range(len(posts_id)):
-        im_id = db_session.query(Image.imageID).select_from(Post).join(Image).where(Post.postID == posts_id[i]).all()
-        db_session.commit()
-        result[i]["image_id"] = im_id[0][0]
-
-    for i in range(len(posts_id)):
-        likes_count = db_session.query(count(Like.u_id)).select_from(Like).where(Like.p_id == posts_id[i]).all()
-        db_session.commit()
-        result[i]["likes"] = likes_count[0][0]
-
-    for i in range(len(posts_id)):
-        flag = db_session.query(count(Like.u_id)).select_from(Like).join(User).where(Like.p_id == posts_id[i] and Like.u_id == authors[i]).all()
-        if flag[0][0] == 1:
-            result[i]["isliked"] = True
-        else:
-            result[i]["isliked"] = False
-    
-    print(result)
-
-    return result
- 
 
 
 class User(Base):
@@ -204,16 +219,6 @@ class Subscription(Base):
         self.subscription_id = subscription_id
         self.subscriber_id = subscriber
 
-
-# class Subscriber(Base):
-#     __tablename__ = "subscribers"
-#     sub_id = Column(Integer, primary_key=True)
-#     subscriber_id = Column(Integer, ForeignKey('users.userID'))
-
-#     def __init__(self,  subscriber_id) -> None:
-#         self.sub_id = subscriber_id
-
-
 class Comment(Base):
     __tablename__ = "comments"
     commentID = Column(Integer, primary_key=True)
@@ -246,5 +251,5 @@ class Like(Base):
 #u = User('Goshan', 'admin@ocalhost.ru', "34ggq32q")
 # db_session.add(u)
 # db_session.commit()
-#get_posts_by_user('Roman')
-
+# get_posts_by_user('Roman')
+#print(count_of_likes(1))
