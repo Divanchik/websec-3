@@ -61,7 +61,7 @@ function postBody(text, imageUrl)
     elem_text.innerText = text;
     let elem_image = document.createElement('img');
     elem_image.className='mx-auto';
-    elem_image.style.height = '100%';
+    elem_image.style.height = '500px';
     elem_image.style.width = '100%';
     elem_image.style.objectFit = 'scale-down';
     elem_image.src = imageUrl;

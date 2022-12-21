@@ -64,7 +64,7 @@ def get_post(username):
         return dumps(res)
     elif request.get_json()['action'] == 'like':
         likes_count = database.count_of_likes(request.get_json()['postnum'])
-        if database.is_liked(session["username"], request.get_json()['postnum']):
+        if database.is_liked(session["username"], request.get_json()['postnum']) == False:
             database.add_like(session["username"], request.get_json()['postnum'])
             likes_count += 1
         else:

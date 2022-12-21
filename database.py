@@ -47,8 +47,9 @@ def add_image(URL):
     return image_id[0][0]
 
 
-def delete_like(u_id, p_id):
-    deleted = delete(Like).where(Like.u_id == u_id and Like.p_id == p_id)
+def delete_like(username, p_id):
+    u_id = db_session.query(User.userID).select_from(User).where(User.username == username).all()
+    deleted = delete(Like).where(Like.p_id == p_id and Like.u_id == u_id[0][0])
     db_session.execute(deleted)
     db_session.commit()
 
@@ -253,3 +254,8 @@ class Like(Base):
 # db_session.commit()
 # get_posts_by_user('Roman')
 #print(count_of_likes(1))
+#print(is_liked('Roman', 3))
+#add_like("Roman",1)
+#add_like("Roman",2)
+#add_like("Roman",3)
+#delete_like("Roman",3)
