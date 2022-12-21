@@ -4,43 +4,34 @@ let username = window.location.pathname.slice(window.location.pathname.lastIndex
 
 let user_x = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user-x"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="18" y1="8" x2="23" y2="13"></line><line x1="23" y1="8" x2="18" y2="13"></line></svg>'
 let user_plus = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0d6efd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user-plus"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>'
-let heart_0 = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
-let heart_1 = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+let heart = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+// let heart_0 = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
 
 async function handleLike(event)
 {
-    console.log(event.currentTarget.textContent);
-    let pname = event.currentTarget.parentElement.parentElement.getAttribute('name');
-    let pnum = parseInt(pname.slice(pname.lastIndexOf('_')+1));
-    let is_liked = false;
-    if (event.currentTarget.classList.contains("liked"))
-    {
-        event.currentTarget.classList.toggle("liked");
-        event.currentTarget.classList.toggle("notliked");
-        let count = parseInt(event.currentTarget.textContent);
-        count--;
-        event.currentTarget.innerHTML = heart_1 + count.toString();
-    }
-    else
-    {
-        is_liked = true;
-        event.currentTarget.classList.toggle("liked");
-        event.currentTarget.classList.toggle("notliked");
-        let count = parseInt(event.currentTarget.textContent);
-        count++;
-        event.currentTarget.innerHTML = heart_0 + count.toString();
-    }
     try
     {
+        let pname = event.currentTarget.parentElement.parentElement.getAttribute('name');
+        let pnum = parseInt(pname.slice(pname.lastIndexOf('_')+1));
+        console.debug(`Clicked like on post #${pnum}`);
         url = window.location.href.slice();
         const response = await fetch(
             url,
             {
                 method: "POST",
-                body: JSON.stringify({action: "like", postnum: pnum, isliked: is_liked}),
+                body: JSON.stringify({action: "like", postnum: pnum}),
                 headers: {'Content-Type': 'application/json'}
             }
         );
+        const data = await response.json();
+        if (data['success'])
+        {
+            event.currentTarget.classList.toggle('liked');
+            event.currentTarget.classList.toggle('notliked');
+            event.currentTarget.innerHTML = heart + data['likes'].toString();
+        }
+        else
+            console.error("Server error on 'like' fetch!");
     }
     catch (error)
     {
@@ -67,8 +58,9 @@ function postBody(text, imageUrl)
     elem_text.innerText = text;
     let elem_image = document.createElement('img');
     elem_image.className='mx-auto';
-    elem_image.style.maxHeight = '500px';
-    elem_image.style.maxWidth = '500px';
+    elem_image.style.height = '100%';
+    elem_image.style.width = '100%';
+    elem_image.style.objectFit = 'scale-down';
     elem_image.src = imageUrl;
     elem.append(elem_text, elem_image);
     return elem;
@@ -82,12 +74,12 @@ function postFooter(likes, liked)
     if (liked)
     {
         like_button.className = "btn liked";
-        like_button.innerHTML = heart_0 + `${likes}`;
+        like_button.innerHTML = heart + `${likes}`;
     }
     else
     {
         like_button.className = "btn notliked";
-        like_button.innerHTML = heart_1 + `${likes}`;
+        like_button.innerHTML = heart + `${likes}`;
     }
     like_button.style.width = 'fit-content';
     like_button.onclick = handleLike;
