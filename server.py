@@ -60,7 +60,7 @@ def get_image(image_number):
 @app.post("/user/<username>")
 def get_post(username):
     if request.get_json()['action'] == 'getposts':
-        res = database.get_posts_by_user(username)
+        res = database.get_posts_by_user(username, session['username'])
         return dumps(res)
     elif request.get_json()['action'] == 'like':
         likes_count = database.count_of_likes(request.get_json()['postnum'])
@@ -82,7 +82,7 @@ def get_post(username):
 def logout():
     session.pop('username', None)
     session.pop('id', None)
-    return render_template("login.html")
+    return redirect(url_for("login"))
 
 @app.get("/register")
 def register():

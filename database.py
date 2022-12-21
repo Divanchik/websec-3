@@ -72,7 +72,8 @@ def count_of_likes(p_id):
 
 def is_liked(username, p_id):
     u_id = db_session.query(User.userID).select_from(User).where(User.username == username).all()
-    flag = db_session.query(count(Like.u_id)).select_from(Like).join(User).where(Like.p_id == p_id and Like.u_id == u_id[0][0]).all()
+    flag = db_session.query(count(Like.u_id)).select_from(Like).join(User).where(Like.p_id == p_id).where(Like.u_id == u_id[0][0]).all()
+    print(f"Flag = {flag}")
     if flag[0][0] == 1:
         return True
     return False
@@ -97,11 +98,11 @@ def get_comment(p_id):
     #print(res)
     return res
 
-def get_posts_by_user(username):
+def get_posts_by_user(author, username):
     result = []
 
     posts = db_session.query(User.username, Post.postID, Post.data, Post.content).select_from(
-        User).join(Post).where(User.username == username).all()
+        User).join(Post).where(User.username == author).all()
     db_session.commit()
     
     posts_id = []
@@ -132,7 +133,9 @@ def get_posts_by_user(username):
     for i in range(len(posts_id)):
         print(f"author: {authors[i]}\n post_id = {posts_id[i]}")
         u_id = db_session.query(User.userID).select_from(User).where(User.username == username).all()
-        flag = db_session.query(count(Like.u_id)).select_from(Like).join(User).where(Like.p_id == posts_id[i] and Like.u_id == u_id[0][0]).all()
+        print(f"u_id:{u_id[0][0]}")
+        flag = db_session.query(count(Like.u_id)).select_from(Like).join(User).where(Like.p_id == posts_id[i]).where(Like.u_id == u_id[0][0]).all()
+        print(f"Flag:{flag}")
         if flag[0][0] == 1:
             result[i]["isliked"] = True
         else:
