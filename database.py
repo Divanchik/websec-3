@@ -4,7 +4,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.sql.functions import count
-engine = create_engine('sqlite:///test.db')
+engine = create_engine('sqlite:///test.db?check_same_thread=False')
 
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
@@ -250,7 +250,7 @@ class Comment(Base):
     __tablename__ = "comments"
     commentID = Column(Integer, primary_key=True)
     content = Column(String(100), nullable=True)
-    dataComment = Column(DateTime, default=datetime.datetime.now())
+    dataComment = Column(DateTime)
     p_id = Column(Integer, ForeignKey('posts.postID'))
     post = relationship('Post')
     author_id = Column(Integer, ForeignKey('users.userID'))
@@ -260,6 +260,7 @@ class Comment(Base):
         self.content = content
         self.author_id = user_id
         self.p_id = post_id
+        self.dataComment = datetime.datetime.now()
 
 
 class Like(Base):
