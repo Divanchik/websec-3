@@ -93,7 +93,7 @@ def get_comment(p_id):
         res.append(tmp)
     res = sorted(
     res,
-    key=lambda x: datetime.datetime.strptime(x['date'], r'%Y-%m-%d %H:%M'), reverse=True)
+    key=lambda x: datetime.datetime.strptime(x['date'], r'%Y-%m-%d %H:%M'), reverse=False)
     #print(res)
     return res
 

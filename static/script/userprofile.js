@@ -42,6 +42,31 @@ async function handleLike(event)
     }
 }
 
+async function handleComment(event)
+{
+    let btn = document.querySelector('form > div > button');
+    let pnum = parseInt(btn.getAttribute('postnumber'));
+    event.preventDefault();
+    let txtarea = document.getElementById('comment_text');
+    console.log('handleComment', pnum, txtarea);
+    try
+    {
+        url = window.location.href.slice();
+        const response = await fetch(
+            url,
+            {
+                method: "POST",
+                body: JSON.stringify({action: "newcomment", content: txtarea.value, postnum: pnum}),
+                headers: {'Content-Type': 'application/json'}
+            }
+        );
+    }
+    catch (error)
+    {
+        console.error("Caught error:", error);
+    }
+}
+
 function postHeader(author, datetime)
 {
     let elem = document.createElement('div');
@@ -59,17 +84,21 @@ function postBody(text, imageUrl)
     elem.className = "row";
     let elem_text = document.createElement('p');
     elem_text.innerText = text;
-    let elem_image = document.createElement('img');
-    elem_image.className='mx-auto';
-    elem_image.style.height = '500px';
-    elem_image.style.width = '100%';
-    elem_image.style.objectFit = 'scale-down';
-    elem_image.src = imageUrl;
-    elem.append(elem_text, elem_image);
+    elem.append(elem_text);
+    if (imageUrl != "")
+    {
+        let elem_image = document.createElement('img');
+        elem_image.className='mx-auto';
+        elem_image.style.height = '500px';
+        elem_image.style.width = '100%';
+        elem_image.style.objectFit = 'scale-down';
+        elem_image.src = imageUrl;
+        elem.append(elem_image);
+    }
     return elem;
 }
 
-function postFooter(likes, liked)
+function postFooter(likes, liked, pnum)
 {
     let elem = document.createElement('div');
     elem.className = "row justify-content-between d-flex align-items-center border-top border-secondary";
@@ -88,6 +117,33 @@ function postFooter(likes, liked)
     like_button.onclick = handleLike;
     
     elem.append(like_button);
+
+    let comment_button = document.createElement('button');
+    comment_button.className = "btn btn-outline-primary";
+    comment_button.innerText = "View comments";
+    comment_button.style.width = '150px';
+    comment_button.setAttribute('data-bs-toggle', 'modal');
+    comment_button.setAttribute('data-bs-target', '#commentsModal');
+    comment_button.setAttribute('data-bs-pnum', `${pnum}`);
+    elem.append(comment_button);
+    return elem;
+}
+
+function commentHeader(author, datetime)
+{
+    let elem = document.createElement('div');
+    elem.className = "row justify-content-start d-flex align-items-center border-top border-secondary";
+    elem.innerHTML = `<h6>${author}</h6><small class="text-secondary">${datetime}</small>`;
+    return elem;
+}
+
+function commentBody(ctext)
+{
+    let elem = document.createElement('div');
+    elem.className = "row border-bottom border-secondary";
+    let elem_text = document.createElement('p');
+    elem_text.innerText = ctext;
+    elem.append(elem_text);
     return elem;
 }
 
@@ -115,10 +171,50 @@ function postFooter(likes, liked)
             tpost.append(
                 postHeader(post_array[i]["author"], post_array[i]["datetime"]),
                 postBody(post_array[i]["content"], window.location.origin + `/image/${post_array[i]["image_id"]}`),
-                postFooter(post_array[i]["likes"], post_array[i]["isliked"])
+                postFooter(post_array[i]["likes"], post_array[i]["isliked"], post_array[i]["post_id"])
             );
             ppanel.append(tpost);
         }
+
+        let modal = document.getElementById('commentsModal');
+        modal.addEventListener('show.bs.modal', async function (event)
+        {
+            let btn = event.relatedTarget;
+            let pnum = parseInt(btn.getAttribute('data-bs-pnum'));
+            let cbtn = modal.querySelector('form > div > button');
+            cbtn.setAttribute('postnumber', `${pnum}`);
+            try
+            {
+                // fetch comments
+                url = window.location.href.slice();
+                const response = await fetch(
+                    url,
+                    {
+                        method: "POST",
+                        body: JSON.stringify({action: "getcomments", postnum: pnum}),
+                        headers: {'Content-Type': 'application/json'}
+                    }
+                );
+                const comment_array = await response.json();
+                let mbody = document.querySelector('div.modal-body');
+                mbody.innerHTML = "";
+                console.log(comment_array, mbody)
+                // display comments
+
+                for (let i = 0; i < comment_array.length; i++) {
+                    tcom = document.createElement('div')
+                    tcom.append(
+                        commentHeader(comment_array[i]["author"], comment_array[i]["date"]),
+                        commentBody(comment_array[i]["content"])
+                    );
+                    mbody.append(tcom);
+                }
+            }
+            catch (error)
+            {
+                console.error("Caught error:", error);
+            }
+        });
 
     }
     catch (error)

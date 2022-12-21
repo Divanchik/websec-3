@@ -26,6 +26,28 @@
 
         </div>
 
+        <div class="modal fade" id="commentsModal" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="commentsModalLabel">Comments</h5>
+                        <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                        <form onsubmit="handleComment(event)" class="container-fluid">
+                            <div class="mb-3">
+                                <textarea id="comment_text" type="text" class="form-control" style="resize: none; width: 100%;"></textarea>
+                            </div>
+                            <div class="mb-3 mx-auto" style="width: 120px;">
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
         <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
         <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script> -->
