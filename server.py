@@ -63,11 +63,14 @@ def get_post(username):
         res = database.get_posts_by_user(username)
         return dumps(res)
     elif request.get_json()['action'] == 'like':
-        if request.get_json()['isliked']:
+        likes_count = database.count_of_likes(request.get_json()['postnum'])
+        if database.is_liked(session["username"], request.get_json()['postnum']):
             database.add_like(session["username"], request.get_json()['postnum'])
+            likes_count += 1
         else:
             database.delete_like(session["username"], request.get_json()['postnum'])
-        return dumps({'success': True})
+            likes_count -= 1
+        return dumps({'success': True, 'likes': likes_count})
     
 
 @app.get("/logout")
