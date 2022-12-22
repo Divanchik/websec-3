@@ -136,7 +136,6 @@ def get_posts_by_user(author, username):
         tmp["datetime"] = i[2].strftime(r"%Y-%m-%d %H:%M")
         tmp["content"] = i[3]
         result.append(tmp)
-    print(posts_id)
     
     for i in range(len(posts_id)):
         im_id = db_session.query(Image.imageID).select_from(Post).join(Image).where(Post.postID == posts_id[i]).all()
@@ -149,20 +148,32 @@ def get_posts_by_user(author, username):
         result[i]["likes"] = likes_count[0][0]
 
     for i in range(len(posts_id)):
-        print(f"author: {authors[i]}\n post_id = {posts_id[i]}")
         u_id = db_session.query(User.userID).select_from(User).where(User.username == username).all()
-        print(f"u_id:{u_id[0][0]}")
         flag = db_session.query(count(Like.u_id)).select_from(Like).join(User).where(Like.p_id == posts_id[i]).where(Like.u_id == u_id[0][0]).all()
-        print(f"Flag:{flag}")
         if flag[0][0] == 1:
             result[i]["isliked"] = True
         else:
             result[i]["isliked"] = False
     
-    print(result)
+
 
     return result
 
+def get_subscription_posts(username):
+    res = []
+    subscriptions = []
+    u_id = db_session.query(User.userID).select_from(User).where(User.username == username).all()
+    subscription_id = db_session.query(Subscription.subscription_id).select_from(Subscription).where(Subscription.subscriber_id == u_id[0][0]).all()
+    for i in subscription_id:
+        tmp = db_session.query(User.username).select_from(User).where(User.userID == i[0]).all()
+        subscriptions.append(tmp[0][0])
+    
+    for i in range(len(subscriptions)):
+        tmp = get_posts_by_user(subscriptions[i], username)
+        print(tmp)
+        res += tmp
+    print(res)
+    return res
 
 def get_recomended_posts(username):
     result = []
@@ -362,6 +373,6 @@ class Like(Base):
 #get_comment(3)
 #delete_user('Anasteisha')
 #print(is_subscription("Roman","Nastya"))
-#add_subscription("Roman","Nastya")
+#add_subscription("Nastya","Roman")
 #delete_subscription("Roman","Nastya")
-
+get_subscription_posts("Nastya")
