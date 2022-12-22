@@ -1,18 +1,50 @@
 let ppanel = document.getElementById("posts_panel");
 let username = window.location.pathname.slice(window.location.pathname.lastIndexOf('/')+1);
 
-
-let user_x = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user-x"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="18" y1="8" x2="23" y2="13"></line><line x1="23" y1="8" x2="18" y2="13"></line></svg>'
-let user_plus = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0d6efd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user-plus"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>'
 let heart = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
-// let heart_0 = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+
+async function handleSubscribe(event)
+{
+    try
+    {
+        url = window.location.href.slice();
+        const response = await fetch(
+            url,
+            {
+                method: "POST",
+                body: JSON.stringify({action: "subscribe"}),
+                headers: {'Content-Type': 'application/json'}
+            }
+        );
+        const data = await response.json();
+        if (data['success'])
+        {
+            let sub_btn = document.getElementById('subscribe_button');
+            if (data['subscribed'])
+            {
+                sub_btn.innerText = "Unsubscribe";
+                sub_btn.classList.remove('btn-outline-info');
+                sub_btn.classList.add('btn-outline-light');
+            }
+            else
+            {
+                sub_btn.innerText = "Subscribe";
+                sub_btn.classList.remove('btn-outline-info');
+                sub_btn.classList.add('btn-outline-light');
+            }
+        }
+    }
+    catch (error)
+    {
+        console.error("Caught error:", error);
+    }
+}
 
 async function handleLike(event)
 {
     let btn = event.currentTarget;
     try
     {
-        console.debug(btn.classList);
         let pname = btn.parentElement.parentElement.getAttribute('name');
         let pnum = parseInt(pname.slice(pname.lastIndexOf('_')+1));
         console.debug(`Clicked like on post #${pnum}`);
