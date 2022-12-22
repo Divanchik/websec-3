@@ -15,7 +15,6 @@ def confirm():
     username = request.args.getlist("username")[0]
     email = request.args.getlist("email")[0]
     hash_passwd = request.args.getlist("hash_passwd")[0]
-    print(type(hash_passwd))
     data = request.args.getlist("data")[0]
     if  mail.confirm_link(username, email, hash_passwd, data, mail.salt):
         message = f"Добро пожаловать в dwitter, {username}"
@@ -45,7 +44,30 @@ def login_data():
     session["id"] = hashlib.sha256(user[0].encode("utf-8") + salt.encode("utf-8")).hexdigest()
     return dumps({'success': True, 'username':user[0]})
 
+@app.get("/posts/feed")
+def feed():
+    return render_template('feed.html', user=session['username'])
 
+@app.post("/posts/feed")
+def get_feed():
+    if request.get_json()['action'] == 'getposts':
+        res = database.get_subscription_posts(session['username'])
+        return dumps(res)
+    elif request.get_json()['action'] == 'like':
+        likes_count = database.count_of_likes(request.get_json()['postnum'])
+        if database.is_liked(session["username"], request.get_json()['postnum']) == False:
+            database.add_like(session["username"], request.get_json()['postnum'])
+            likes_count += 1
+        else:
+            database.delete_like(session["username"], request.get_json()['postnum'])
+            likes_count -= 1
+        return dumps({'success': True, 'likes': likes_count})
+    elif request.get_json()['action'] == 'newcomment':
+        database.add_comment(session['username'], request.get_json()['postnum'], request.get_json()['content'])
+        return dumps({'success': True})
+    elif request.get_json()['action'] == 'getcomments':
+        inf = database.get_comment(request.get_json()['postnum'])
+        return dumps(inf) 
 
 @app.get("/user/<username>")
 def user(username):
