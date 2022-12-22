@@ -12,4 +12,7 @@ htmlcov/
 dist/
 build/
 *.egg-ingo/
+
 mail.json
+key.txt
+secret_key.bin

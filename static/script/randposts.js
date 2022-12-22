@@ -58,6 +58,7 @@ async function handleComment(event)
                 headers: {'Content-Type': 'application/json'}
             }
         );
+        txtarea.value = "";
     }
     catch (error)
     {

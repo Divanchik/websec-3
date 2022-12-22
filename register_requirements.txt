@@ -1,8 +1,0 @@
-username
-    3 - 25 symbols
-    contains lower and uppercase letters, digits, underscore
-    starts with a letter
-
-password
-    8 - 30 symbols
-    no whitespaces
