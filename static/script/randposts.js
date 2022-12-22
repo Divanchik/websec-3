@@ -6,6 +6,65 @@ let username = window.location.pathname.slice(
 let heart =
   '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
 
+async function handleLike(event)
+{
+    let btn = event.currentTarget;
+    try
+    {
+        let pname = btn.parentElement.parentElement.getAttribute('name');
+        let pnum = parseInt(pname.slice(pname.lastIndexOf('_')+1));
+        console.debug(`Clicked like on post #${pnum}`);
+        url = window.location.href.slice();
+        const response = await fetch(
+            url,
+            {
+                method: "POST",
+                body: JSON.stringify({action: "like", postnum: pnum}),
+                headers: {'Content-Type': 'application/json'}
+            }
+        );
+        const data = await response.json();
+        console.debug(data);
+        if (data['success'])
+        {
+            btn.classList.toggle('liked');
+            btn.classList.toggle('notliked');
+            btn.innerHTML = heart + data['likes'].toString();
+        }
+        else
+            console.error("Server error on 'like' fetch!");
+    }
+    catch (error)
+    {
+        console.error("Caught error:", error);
+    }
+}
+
+async function handleComment(event)
+{
+    let btn = document.querySelector('form > div > button');
+    let pnum = parseInt(btn.getAttribute('postnumber'));
+    event.preventDefault();
+    let txtarea = document.getElementById('comment_text');
+    console.log('handleComment', pnum, txtarea);
+    try
+    {
+        url = window.location.href.slice();
+        const response = await fetch(
+            url,
+            {
+                method: "POST",
+                body: JSON.stringify({action: "newcomment", content: txtarea.value, postnum: pnum}),
+                headers: {'Content-Type': 'application/json'}
+            }
+        );
+    }
+    catch (error)
+    {
+        console.error("Caught error:", error);
+    }
+}
+
 function postHeader(author, datetime) {
   // header div
   let elem = document.createElement("div");
@@ -45,8 +104,14 @@ function postFooter(likes, liked, pnum) {
   // like button
   let like_button = document.createElement("button");
   like_button.classList.add("btn");
-  if (liked) like_button.className.add("liked");
-  else like_button.className.add("notliked");
+  if (liked)
+  {
+    like_button.classList.add("liked");
+  }
+  else
+  {
+    like_button.classList.add("notliked");
+  }
   like_button.innerHTML = heart + `${likes}`;
   like_button.style.width = "fit-content";
   like_button.onclick = handleLike;

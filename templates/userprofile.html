@@ -16,12 +16,13 @@
             </div>
             <div style="width: fit-content;">
                 {% if not author %}
-                <button id="subscribe_button" class="btn p-2 {{ sub_btn_style }}">{{ sub_btn_text }}</button>
+                <button id="subscribe_button" class="btn p-2 {{ sub_btn_style }}" onclick="handleSubscribe(event)">{{ sub_btn_text }}</button>
+                <a class="btn p-2" href="{{ url_for('user', username=user) }}"><i data-feather="user" stroke="white"></i></a>
                 {% endif %}
                 {% if author %}
-                <a class="btn p-2" href="{{ url_for('user', username=username+'/new') }}"><i data-feather="edit" stroke="white"></i></a>
+                <a class="btn p-2" href="/posts/recommended"><i data-feather="search" stroke="white"></i></a>
+                <a class="btn p-2" href="{{ url_for('user', username=user+'/new') }}"><i data-feather="edit" stroke="white"></i></a>
                 {% endif %}
-                <a class="btn p-2" href="{{ url_for('user', username=username) }}"><i data-feather="user" stroke="white"></i></a>
                 <a class="btn p-2" href="/logout"><i data-feather="log-out" stroke="white"></i></a>
             </div>
         </div>

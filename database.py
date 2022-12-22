@@ -4,6 +4,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.sql.functions import count
+import random
 engine = create_engine('sqlite:///test.db?check_same_thread=False')
 
 db_session = scoped_session(sessionmaker(autocommit=False,
@@ -52,11 +53,28 @@ def add_comment(username, post_id, content):
     db_session.add(new_comment)
     db_session.commit() 
 
+def add_subscription(subscriber, subscription):
+    subscriber_id = db_session.query(User.userID).select_from(User).where(User.username == subscriber).all()
+    subscription_id = db_session.query(User.userID).select_from(User).where(User.username == subscription).all()
+    new_sub = Subscription(subscriber_id[0][0], subscription_id[0][0])
+    db_session.add(new_sub)
+    db_session.commit()
 
+def delete_subscription(subscriber, subscription):
+    subscriber_id = db_session.query(User.userID).select_from(User).where(User.username == subscriber).all()
+    subscription_id = db_session.query(User.userID).select_from(User).where(User.username == subscription).all()
+    deleted = delete(Subscription).where(Subscription.subscriber_id == subscriber_id[0][0]).where(Subscription.subscription_id == subscription_id[0][0])
+    db_session.execute(deleted)
+    db_session.commit()
 
 def delete_like(username, p_id):
     u_id = db_session.query(User.userID).select_from(User).where(User.username == username).all()
-    deleted = delete(Like).where(Like.p_id == p_id and Like.u_id == u_id[0][0])
+    deleted = delete(Like).where(Like.p_id == p_id).where(Like.u_id == u_id[0][0])
+    db_session.execute(deleted)
+    db_session.commit()
+
+def delete_user(username):
+    deleted = delete(User).where(User.username == username)
     db_session.execute(deleted)
     db_session.commit()
 
@@ -146,6 +164,52 @@ def get_posts_by_user(author, username):
     return result
 
 
+def get_recomended_posts(username):
+    result = []
+    posts = db_session.query(User.username, Post.postID, Post.data, Post.content).select_from(
+        User).join(Post).where(User.username != username).all()
+    db_session.commit()
+
+    posts_id = []
+    authors = []
+   
+    for i in posts:
+        authors.append(i[0])
+        posts_id.append(i[1])
+        tmp = {}
+        tmp["author"] = i[0]
+        tmp["post_id"] = i[1]
+        tmp["datetime"] = i[2].strftime(r"%Y-%m-%d %H:%M")
+        tmp["content"] = i[3]
+        result.append(tmp)
+    print(posts_id)
+    
+    for i in range(len(posts_id)):
+        im_id = db_session.query(Image.imageID).select_from(Post).join(Image).where(Post.postID == posts_id[i]).all()
+        db_session.commit()
+        result[i]["image_id"] = im_id[0][0]
+
+    for i in range(len(posts_id)):
+        likes_count = db_session.query(count(Like.u_id)).select_from(Like).where(Like.p_id == posts_id[i]).all()
+        db_session.commit()
+        result[i]["likes"] = likes_count[0][0]
+
+    for i in range(len(posts_id)):
+        print(f"author: {authors[i]}\n post_id = {posts_id[i]}")
+        u_id = db_session.query(User.userID).select_from(User).where(User.username == username).all()
+        print(f"u_id:{u_id[0][0]}")
+        flag = db_session.query(count(Like.u_id)).select_from(Like).join(User).where(Like.p_id == posts_id[i]).where(Like.u_id == u_id[0][0]).all()
+        print(f"Flag:{flag}")
+        if flag[0][0] == 1:
+            result[i]["isliked"] = True
+        else:
+            result[i]["isliked"] = False
+    
+    random.shuffle(result)
+    print(result)
+
+    return result
+
 def find_user_by_name(user):
     user = db_session.query(User.username, User.email, User.password).select_from(
         User).where(User.username == user).all()
@@ -192,6 +256,13 @@ def is_email_exist(email):
     db_session.commit()
     return True
 
+def is_subscription(subscriber, subscription):
+    subscriber_id = db_session.query(User.userID).select_from(User).where(User.username == subscriber).all()
+    subscription_id = db_session.query(User.userID).select_from(User).where(User.username == subscription).all()
+    flag = db_session.query(count(Subscription.subscriber_id)).select_from(Subscription).where(Subscription.subscriber_id == subscriber_id[0][0]).where(Subscription.subscription_id == subscription_id[0][0]).all()
+    if flag[0][0] == 1:
+        return True
+    return False
 
 class User(Base):
     __tablename__ = 'users'
@@ -242,7 +313,7 @@ class Subscription(Base):
     subscription = relationship('User', foreign_keys=[subscription_id])
     subscriber = relationship('User', foreign_keys=[subscriber_id])
 
-    def __init__(self,  subscription_id, subscriber) -> None:
+    def __init__(self,  subscriber, subscription_id) -> None:
         self.subscription_id = subscription_id
         self.subscriber_id = subscriber
 
@@ -288,4 +359,9 @@ class Like(Base):
 #delete_like("Roman",3)
 #add_comment("Roman",3, 'Владимир Путин, молодец!')
 #add_comment("Roman",3, 'Политик, лидер и борец!')
-get_comment(3)
+#get_comment(3)
+#delete_user('Anasteisha')
+#print(is_subscription("Roman","Nastya"))
+#add_subscription("Roman","Nastya")
+#delete_subscription("Roman","Nastya")
+

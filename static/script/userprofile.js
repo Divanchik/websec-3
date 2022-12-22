@@ -17,6 +17,7 @@ async function handleSubscribe(event)
             }
         );
         const data = await response.json();
+        console.log(data,"Subscription handle")
         if (data['success'])
         {
             let sub_btn = document.getElementById('subscribe_button');

@@ -45,11 +45,46 @@ def login_data():
     session["id"] = hashlib.sha256(user[0].encode("utf-8") + salt.encode("utf-8")).hexdigest()
     return dumps({'success': True, 'username':user[0]})
 
+
+
 @app.get("/user/<username>")
 def user(username):
+    sub_button_style =""
+    sub_button_text = ""
+    if database.is_subscription(session['username'], username):
+        sub_button_style = "btn-outline-light"
+        sub_button_text = "Unsubscribe"
+    else:
+        sub_button_style = "btn-outline-info"
+        sub_button_text = "Subscribe"
     isauthor = True if session["username"] == username else False
-    return render_template("userprofile.html", pagetitle=f"{username}'s profile", username=username, author=isauthor)
+    return render_template("userprofile.html", user=session['username'], pagetitle=f"{username}'s profile", username=username, author=isauthor, sub_btn_style=sub_button_style, sub_btn_text=sub_button_text)
 
+@app.get("/posts/recommended")
+def recommended():
+    return render_template("randposts.html", user=session['username'])
+
+@app.post("/posts/recommended")
+def get_recommended_post():
+    if request.get_json()['action'] == 'getposts':
+        res = database.get_recomended_posts(session['username'])
+        return dumps(res)
+    elif request.get_json()['action'] == 'like':
+        likes_count = database.count_of_likes(request.get_json()['postnum'])
+        if database.is_liked(session["username"], request.get_json()['postnum']) == False:
+            database.add_like(session["username"], request.get_json()['postnum'])
+            likes_count += 1
+        else:
+            database.delete_like(session["username"], request.get_json()['postnum'])
+            likes_count -= 1
+        return dumps({'success': True, 'likes': likes_count})
+    elif request.get_json()['action'] == 'newcomment':
+        database.add_comment(session['username'], request.get_json()['postnum'], request.get_json()['content'])
+        return dumps({'success': True})
+    elif request.get_json()['action'] == 'getcomments':
+        inf = database.get_comment(request.get_json()['postnum'])
+        return dumps(inf) 
+    
 
 @app.get("/image/<image_number>")
 def get_image(image_number):
@@ -77,6 +112,13 @@ def get_post(username):
     elif request.get_json()['action'] == 'getcomments':
         inf = database.get_comment(request.get_json()['postnum'])
         return dumps(inf) 
+    elif request.get_json()['action'] == 'subscribe':
+        if database.is_subscription(session['username'], username) == False:
+            database.add_subscription(session['username'], username)
+            return dumps({'success': True, 'subscribed':True})
+        else:
+            database.delete_subscription(session['username'], username)
+            return dumps({'success': True, 'subscribed':False})
 
 @app.get("/logout")
 def logout():

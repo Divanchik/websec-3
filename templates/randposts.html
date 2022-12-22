@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>{{ pagetitle }}</title>
+        <title>Recommended</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -15,7 +15,7 @@
                 <h5 class="my-auto">Recommended</h5>
             </div>
             <div style="width: fit-content;">
-                <a class="btn p-2" href="{{ url_for('user', username=username) }}"><i data-feather="user" stroke="white"></i></a>
+                <a class="btn p-2" href="{{ url_for('user', username=user) }}"><i data-feather="user" stroke="white"></i></a>
                 <a class="btn p-2" href="/logout"><i data-feather="log-out" stroke="white"></i></a>
             </div>
         </div>
