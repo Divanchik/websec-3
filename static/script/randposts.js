@@ -128,6 +128,24 @@ function postFooter(likes, liked, pnum) {
   return elem;
 }
 
+function commentHeader(author, datetime)
+{
+    let elem = document.createElement('div');
+    elem.className = "row justify-content-start d-flex align-items-center border-top border-secondary";
+    elem.innerHTML = `<h6>${author}</h6><small class="text-secondary">${datetime}</small>`;
+    return elem;
+}
+
+function commentBody(ctext)
+{
+    let elem = document.createElement('div');
+    elem.className = "row border-bottom border-secondary";
+    let elem_text = document.createElement('p');
+    elem_text.innerText = ctext;
+    elem.append(elem_text);
+    return elem;
+}
+
 (async () => {
   try {
     // get random posts

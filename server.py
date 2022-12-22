@@ -4,9 +4,7 @@ import mail
 import database
 import hashlib
 app = Flask(__name__)
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 app.config["UPLOAD_FOLDER"] = "./images"
-salt = "e&xKRt*kb&tUlrQ6"
 @app.route("/")
 def main():
     return render_template("index.html")
@@ -41,7 +39,7 @@ def login_data():
     if mail.check_passwd(passwd,user[2]) == False:
         return dumps({'success': False})
     session["username"] = user[0]
-    session["id"] = hashlib.sha256(user[0].encode("utf-8") + salt.encode("utf-8")).hexdigest()
+    session["id"] = hashlib.sha256(user[0].encode("utf-8") + mail.salt.encode("utf-8")).hexdigest()
     return dumps({'success': True, 'username':user[0]})
 
 @app.get("/posts/feed")
@@ -155,7 +153,6 @@ def register():
 @app.post("/register")
 def register_data():
     app.logger.debug("register [POST]")
-    print(request.get_json())
     if database.is_username_exist(request.get_json()['username']) or database.is_email_exist(request.get_json()['email']):
         return dumps({'success': False})
     mail.send_email(request.get_json()['username'], request.get_json()['email'], request.get_json()['password'])
@@ -170,7 +167,6 @@ def post(username):
 def new_post(username):
     image_id = 0
     image = request.files.get('pub_img')
-    print(request.form['post_content'])
     if image.filename != "":
         format = image.filename.endswith(".png")
         name = hashlib.sha256(database.count_of_images().encode()).hexdigest()
@@ -188,5 +184,9 @@ def new_post(username):
     
     return redirect(url_for('user', username=username))
 if __name__ == "__main__":
+    with open('key.txt', 'r') as f:
+        mail.salt = f.read()
+    with open('secret_key.bin', 'rb') as f:
+        app.secret_key = f.read()    
     database.init_db()
     app.run(host="0.0.0.0", port=5000, debug=True)
